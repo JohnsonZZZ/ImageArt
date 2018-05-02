@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Created By Johnson on 2018/5/2.
  */
-public class ArtOptions {
+class ArtOptions {
 	protected boolean isAutoRotate = true;//适配三星、小米等手机图片拍照后旋转问题
 	protected int targetWidth;
 	protected int targetHeight;
@@ -55,8 +55,6 @@ public class ArtOptions {
 	}
 
 	public void build() {
-		if (file != null) {
-//			ImageArt.getInstance().find(file).
-		}
+		ImageArt.getInstance().attachOptions(this);
 	}
 }

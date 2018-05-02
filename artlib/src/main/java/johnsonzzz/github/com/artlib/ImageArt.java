@@ -32,4 +32,7 @@ public class ImageArt {
 		return new ArtOptions(file);
 	}
 
+	protected void attachOptions(ArtOptions options){
+
+	}
 }
