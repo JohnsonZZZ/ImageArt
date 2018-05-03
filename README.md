@@ -2,7 +2,7 @@
 compress image by JPEG-TURBO 
 
 
-###How to use
+### How to use
 ```
 ImageArt.getInstance()
 				.createBuilder(this)
