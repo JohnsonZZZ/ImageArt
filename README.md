@@ -3,6 +3,7 @@ compress image by JPEG-TURBO
 
 
 ###How to use
+```
 ImageArt.getInstance()
 				.createBuilder(this)
 				.autoRotate(true)
@@ -25,3 +26,4 @@ ImageArt.getInstance()
 					}
 				})
 				.build();
+```
