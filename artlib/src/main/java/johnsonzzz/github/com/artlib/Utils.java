@@ -1,14 +1,33 @@
 package johnsonzzz.github.com.artlib;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 public class Utils {
+
+	static BitmapFactory.Options createBitmapOptions(ArtBuilder data) {
+		final boolean justBounds = data.targetWidth != 0 || data.targetHeight != 0;
+		BitmapFactory.Options options = null;
+		if (justBounds || data.config != null) {
+			options = new BitmapFactory.Options();
+			options.inJustDecodeBounds = justBounds;
+			options.inInputShareable = true;
+			options.inPurgeable = true;
+			options.inPreferredConfig = data.config;
+		}
+		return options;
+	}
+
 	public static Bitmap scaleTo(Bitmap bitmap, int width, int height) {
 		int originalWidth = bitmap.getWidth();
 		int originalHeight = bitmap.getHeight();
@@ -46,6 +65,7 @@ public class Utils {
 				inSampleSize *= 2;
 			}
 		}
+		options.inJustDecodeBounds = false;
 		return inSampleSize;
 	}
 
@@ -98,5 +118,56 @@ public class Utils {
 			e.printStackTrace();
 			// Ignored
 		}
+	}
+
+	static Resources getResources(Context context, ArtBuilder builder) throws FileNotFoundException {
+		if (builder.drawableResId != 0 || builder.uri == null) {
+			return context.getResources();
+		}
+
+		String pkg = builder.uri.getAuthority();
+		if (pkg == null)  {
+			throw new FileNotFoundException("No package provided: " + builder.uri);
+		}
+		try {
+			PackageManager pm = context.getPackageManager();
+			return pm.getResourcesForApplication(pkg);
+		} catch (PackageManager.NameNotFoundException e) {
+			throw new FileNotFoundException("Unable to obtain resources for package: " + builder.uri);
+		}
+	}
+
+
+	static int getResourceId(Resources resources, ArtBuilder builder) throws FileNotFoundException {
+		if (builder.drawableResId != 0 || builder.uri == null) {
+			return builder.drawableResId;
+		}
+
+		String pkg = builder.uri.getAuthority();
+		if (pkg == null) throw new FileNotFoundException("No package provided: " + builder.uri);
+
+		int id;
+		List<String> segments = builder.uri.getPathSegments();
+		if (segments == null || segments.isEmpty()) {
+			throw new FileNotFoundException("No path segments: " + builder.uri);
+		} else if (segments.size() == 1) {
+			try {
+				id = Integer.parseInt(segments.get(0));
+			} catch (NumberFormatException e) {
+				throw new FileNotFoundException("Last path segment is not a resource ID: " + builder.uri);
+			}
+		} else if (segments.size() == 2) {
+			String type = segments.get(0);
+			String name = segments.get(1);
+
+			id = resources.getIdentifier(name, type, pkg);
+		} else {
+			throw new FileNotFoundException("More than two path segments: " + builder.uri);
+		}
+		return id;
+	}
+
+	static boolean requiresInSampleSize(BitmapFactory.Options options) {
+		return options != null && options.inJustDecodeBounds;
 	}
 }
