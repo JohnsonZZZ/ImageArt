@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.os.Looper;
 
 import java.io.Closeable;
 import java.io.FileNotFoundException;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class Utils {
 
-	static BitmapFactory.Options createBitmapOptions(ArtBuilder data) {
+	public static BitmapFactory.Options createBitmapOptions(ArtBuilder data) {
 		final boolean justBounds = data.targetWidth != 0 || data.targetHeight != 0;
 		BitmapFactory.Options options = null;
 		if (justBounds || data.config != null) {
@@ -28,16 +29,16 @@ public class Utils {
 		return options;
 	}
 
-	public static Bitmap scaleTo(Bitmap bitmap, int width, int height) {
+	public static Bitmap scaleTo(Bitmap bitmap, int reqWidth, int reqHeight) {
 		int originalWidth = bitmap.getWidth();
 		int originalHeight = bitmap.getHeight();
 		float scale;
 		if (originalWidth < originalHeight) {
-			scale = (float) height / originalHeight;
+			scale = (float) reqHeight / originalHeight;
 		} else {
-			scale = (float) width / originalWidth;
+			scale = (float) reqWidth / originalWidth;
 		}
-		if (scale > 1 || width == 0 || height == 0) {
+		if (scale > 1 || reqWidth == 0 || reqHeight == 0) {
 			return bitmap;
 		}
 		Matrix matrix = new Matrix();
@@ -120,7 +121,7 @@ public class Utils {
 		}
 	}
 
-	static Resources getResources(Context context, ArtBuilder builder) throws FileNotFoundException {
+	public static Resources getResources(Context context, ArtBuilder builder) throws FileNotFoundException {
 		if (builder.drawableResId != 0 || builder.uri == null) {
 			return context.getResources();
 		}
@@ -138,7 +139,7 @@ public class Utils {
 	}
 
 
-	static int getResourceId(Resources resources, ArtBuilder builder) throws FileNotFoundException {
+	public static int getResourceId(Resources resources, ArtBuilder builder) throws FileNotFoundException {
 		if (builder.drawableResId != 0 || builder.uri == null) {
 			return builder.drawableResId;
 		}
@@ -167,7 +168,37 @@ public class Utils {
 		return id;
 	}
 
-	static boolean requiresInSampleSize(BitmapFactory.Options options) {
+	public static boolean requiresInSampleSize(BitmapFactory.Options options) {
 		return options != null && options.inJustDecodeBounds;
+	}
+
+	public static Bitmap rotateBitmapByDegree(Bitmap srcBitmap, int degree) {
+		if (degree == 0) {
+			return srcBitmap;
+		}
+		Bitmap newBitmap;
+		// 根据旋转角度，生成旋转矩阵
+		Matrix matrix = new Matrix();
+		matrix.preRotate(degree);
+		// 将原始图片按照旋转矩阵进行旋转，并得到新的图片
+		newBitmap = Bitmap.createBitmap(srcBitmap, 0, 0, srcBitmap.getWidth(), srcBitmap.getHeight(), matrix, true);
+
+		if (newBitmap == null) {
+			newBitmap = srcBitmap;
+		}
+		if (srcBitmap != null && !srcBitmap.isRecycled()) {
+			srcBitmap.recycle();
+		}
+		return newBitmap;
+	}
+
+	public static void checkNotMain() {
+		if (isMain()) {
+			throw new IllegalStateException("Method call should not happen from the main thread.");
+		}
+	}
+
+	public static boolean isMain() {
+		return Looper.getMainLooper().getThread() == Thread.currentThread();
 	}
 }

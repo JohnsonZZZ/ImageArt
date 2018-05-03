@@ -9,7 +9,7 @@ import java.io.File;
 /**
  * Created By Johnson on 2018/5/2.
  */
-final class ArtBuilder {
+public final class ArtBuilder {
 	protected boolean isAutoRotate = true;//适配三星、小米等手机图片拍照后旋转问题
 	protected int targetWidth;
 	protected int targetHeight;
@@ -20,9 +20,10 @@ final class ArtBuilder {
 	protected File sourceFile;//图片源文件
 	protected String targetFilePath;//图片压缩后路径
 	protected int drawableResId;
-	protected BitmapCallBack bitmapCallBack;
+	protected CompressCallBack bitmapCallBack;
 	protected Bitmap.Config config;
 	protected Context context;
+	protected boolean isAsync;//true:开启异步线程压缩 false:同步压缩
 
 	public ArtBuilder(Context context) {
 		this.context = context.getApplicationContext();
@@ -73,20 +74,26 @@ final class ArtBuilder {
 		this.maxSize = maxSize;
 		return this;
 	}
+
 	public ArtBuilder config(Bitmap.Config config) {
 		this.config = config;
 		return this;
 	}
 
-	public ArtBuilder callback(BitmapCallBack bitmapCallBack) {
+	public ArtBuilder callback(CompressCallBack bitmapCallBack) {
 		this.bitmapCallBack = bitmapCallBack;
+		return this;
+	}
+
+	public ArtBuilder isAsync(boolean isAsync) {
+		this.isAsync = isAsync;
 		return this;
 	}
 
 	public void build() {
 		//set default builder's config
 		if (quality <= 0) {
-			quality = 100;
+			quality = 97;
 		}
 		if (maxSize <= 0) {
 			maxSize = 300*1024;//默认大小300kb

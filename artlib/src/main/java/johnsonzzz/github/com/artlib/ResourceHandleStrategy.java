@@ -37,6 +37,7 @@ public class ResourceHandleStrategy implements IHandleStrategy {
 			BitmapFactory.decodeResource(resources, id, options);
 			Utils.calculateInSampleSize(options, builder.targetWidth, builder.targetHeight);
 		}
-		return BitmapFactory.decodeResource(resources, id, options);
+		Bitmap srcBitmap = BitmapFactory.decodeResource(resources, id, options);
+		return Utils.scaleTo(srcBitmap, builder.targetWidth, builder.targetHeight);
 	}
 }

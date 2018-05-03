@@ -11,7 +11,7 @@ public interface IHandleStrategy {
 	/**
 	 *
 	 * @param builder
-	 * @return true: this Strategy can handle the image builder
+	 * @return true: this Strategy can handle the image
 	 */
 	boolean canHandleImage(ArtBuilder builder);
 

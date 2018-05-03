@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+
 /**
  * Created By Johnson on 2018/5/3.
  */
@@ -28,6 +29,7 @@ public class NetHandleStrategy implements IHandleStrategy {
 
 	@Override
 	public Bitmap loadBitmap(ArtBuilder builder) {
+		Utils.checkNotMain();
 		Uri uri = builder.uri == null ? Uri.parse(builder.url) : builder.uri;
 		InputStream is = null;
 		try {
@@ -50,7 +52,8 @@ public class NetHandleStrategy implements IHandleStrategy {
 			BitmapFactory.decodeStream(is, null, options);
 			Utils.calculateInSampleSize(options, builder.targetWidth, builder.targetHeight);
 		}
-		return BitmapFactory.decodeStream(is, null, options);
+		Bitmap srcBitmap = BitmapFactory.decodeStream(is, null, options);
+		return Utils.scaleTo(srcBitmap, builder.targetWidth, builder.targetHeight);
 	}
 
 	protected HttpURLConnection openConnection(Uri path) throws IOException {

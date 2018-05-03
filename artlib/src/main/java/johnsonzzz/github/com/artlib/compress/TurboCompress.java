@@ -27,7 +27,6 @@ public class TurboCompress implements ICompress{
 
 	@Override
 	public boolean compressBitmap(Bitmap bitmap, int w, int h, int quality, String destFileName) {
-		Bitmap scaleBitmap = Utils.scaleTo(bitmap, w, h);
-		return compressBitmap(scaleBitmap, w, h, quality, destFileName.getBytes(), true);
+		return compressBitmap(bitmap, w, h, quality, destFileName.getBytes(), true);
 	}
 }

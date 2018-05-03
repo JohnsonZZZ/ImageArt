@@ -27,6 +27,10 @@ public class FileHandleStrategy implements IHandleStrategy {
 			BitmapFactory.decodeFile(uri.getPath(), options);
 			Utils.calculateInSampleSize(options, builder.targetWidth, builder.targetHeight);
 		}
-		return BitmapFactory.decodeFile(uri.getPath(), options);
+		Bitmap srcBitmap = BitmapFactory.decodeFile(uri.getPath(), options);
+		if (builder.isAutoRotate) {
+			srcBitmap = Utils.rotateBitmapByDegree(srcBitmap, Utils.getBitmapDegree(uri.getPath()));
+		}
+		return Utils.scaleTo(srcBitmap, builder.targetWidth, builder.targetHeight);
 	}
 }
