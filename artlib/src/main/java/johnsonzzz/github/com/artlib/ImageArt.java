@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +21,7 @@ public class ImageArt {
 	private volatile static ImageArt sInstance;
 	private List<IHandleStrategy> handleList;
 	private ExecutorService executors;
+	private boolean isRunning;
 
 	private final static int MSG_COMPRESS_SUCCESS = 101;
 	private final static int MSG_COMPRESS_FAIL = 102;
@@ -29,6 +31,7 @@ public class ImageArt {
 		handleList.add(new FileHandleStrategy());
 		handleList.add(new ResourceHandleStrategy());
 		handleList.add(new NetHandleStrategy());
+		Collections.unmodifiableList(handleList);
 	}
 
 	public static ImageArt getInstance() {
@@ -48,17 +51,20 @@ public class ImageArt {
 
 	protected void attachBuilder(ArtBuilder builder){
 		if (builder.context == null) {
-			throw new NullPointerException("you must set ArtBuilder's context or  at first");
+			throw new NullPointerException("You must set ArtBuilder's context or  at first");
 		}
 		if (TextUtils.isEmpty(builder.targetFilePath)) {
-			throw new IllegalStateException("you should set ArtBuilder's targetFilePath");
+			throw new IllegalStateException("You should set ArtBuilder's targetFilePath");
 		}
 		if (builder.drawableResId == 0 && builder.sourceFile == null && builder.url == null) {
-			throw new IllegalStateException("you must set ArtBuilder's imagesource");
+			throw new IllegalStateException("You must set your imagesource");
 		}
 		if (builder.isAsync) {
 			if (executors == null) {
 				executors = Executors.newCachedThreadPool();
+			}
+			if (isRunning) {
+                throw new IllegalStateException("Art is Running, Please not compress  multi-images at the same time!");
 			}
 			executors.execute(new ArtRunnable(builder));
 		} else {
@@ -83,7 +89,12 @@ public class ImageArt {
 		}
 		@Override
 		public void run() {
-			traverseAlltraverse(builder);
+			try {
+				isRunning = true;
+				traverseAlltraverse(builder);
+			} finally {
+				isRunning = false;
+			}
 		}
 	}
 
@@ -94,14 +105,15 @@ public class ImageArt {
 				ICompress compress = getDefaultCompress(bitmap);
 				boolean result = compress.compressBitmap(bitmap, builder.targetWidth, builder.targetHeight,
 						builder.quality, builder.targetFilePath);
-				mainHandler.sendMessage(mainHandler.obtainMessage(result ? MSG_COMPRESS_SUCCESS : MSG_COMPRESS_FAIL, builder));
+				Message message = mainHandler.obtainMessage(result ? MSG_COMPRESS_SUCCESS : MSG_COMPRESS_FAIL, builder);
+				mainHandler.sendMessage(message);
 				break;
 			}
 		}
 	}
 
 
-	static final Handler mainHandler = new android.os.Handler(Looper.getMainLooper()) {
+	static final Handler mainHandler = new Handler(Looper.getMainLooper()) {
 		@Override
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);

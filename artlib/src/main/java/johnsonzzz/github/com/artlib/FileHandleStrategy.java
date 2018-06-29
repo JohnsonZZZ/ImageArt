@@ -10,6 +10,7 @@ import static android.content.ContentResolver.SCHEME_FILE;
  * Created By Johnson on 2018/5/3.
  */
 public class FileHandleStrategy implements IHandleStrategy {
+
 	@Override
 	public boolean canHandleImage(ArtBuilder builder) {
 		if (builder.uri == null && builder.sourceFile == null) {

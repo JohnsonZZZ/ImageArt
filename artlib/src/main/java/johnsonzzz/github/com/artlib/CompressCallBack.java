@@ -10,4 +10,16 @@ public interface CompressCallBack {
 
 	void onCompressFailed();
 
+	class EmptyCallBack implements CompressCallBack {
+
+		@Override
+		public void onCompressSuccess() {
+
+		}
+
+		@Override
+		public void onCompressFailed() {
+
+		}
+	}
 }
