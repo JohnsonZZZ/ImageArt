@@ -24,6 +24,7 @@ public final class ArtBuilder {
 	protected Bitmap.Config config;
 	protected Context context;
 	protected boolean isAsync;//true:开启异步线程压缩 false:同步压缩
+	protected int threadCount;//压缩图片的线程
 
 	public ArtBuilder(Context context) {
 		this.context = context.getApplicationContext();
@@ -51,6 +52,11 @@ public final class ArtBuilder {
 
 	public ArtBuilder drawableResId(int drawableResId) {
 		this.drawableResId = drawableResId;
+		return this;
+	}
+
+	public ArtBuilder threadCount(int maxThreadsCount) {
+		this.threadCount = maxThreadsCount;
 		return this;
 	}
 
@@ -100,6 +106,9 @@ public final class ArtBuilder {
 		}
 		if (config == null) {
 			config = Bitmap.Config.RGB_565;
+		}
+		if (threadCount <= 0) {
+			threadCount = 3;
 		}
 		ImageArt.getInstance().attachBuilder(this);
 	}

@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -21,13 +22,13 @@ public class ImageArt {
 	private volatile static ImageArt sInstance;
 	private List<IHandleStrategy> handleList;
 	private ExecutorService executors;
-	private boolean isRunning;
 
 	private final static int MSG_COMPRESS_SUCCESS = 101;
 	private final static int MSG_COMPRESS_FAIL = 102;
 
 
 	private ImageArt() {
+		handleList= new ArrayList<>();
 		handleList.add(new FileHandleStrategy());
 		handleList.add(new ResourceHandleStrategy());
 		handleList.add(new NetHandleStrategy());
@@ -61,10 +62,7 @@ public class ImageArt {
 		}
 		if (builder.isAsync) {
 			if (executors == null) {
-				executors = Executors.newCachedThreadPool();
-			}
-			if (isRunning) {
-                throw new IllegalStateException("Art is Running, Please not compress  multi-images at the same time!");
+				executors = Executors.newFixedThreadPool(builder.threadCount);
 			}
 			executors.execute(new ArtRunnable(builder));
 		} else {
@@ -89,12 +87,7 @@ public class ImageArt {
 		}
 		@Override
 		public void run() {
-			try {
-				isRunning = true;
-				traverseAlltraverse(builder);
-			} finally {
-				isRunning = false;
-			}
+			traverseAlltraverse(builder);
 		}
 	}
 
